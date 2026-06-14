@@ -1,26 +1,33 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Configuração do Tema (Tailwind v4) */
+@theme {
+  /* Sintaxe corrigida: sem vírgulas e sem 'deg' */
+  --background: oklch(0.96 0.02 275);
+  --foreground: var(--color-zinc-900);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Estilos Globais Base */
+@layer base {
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+
+  /* Garantindo que quando a classe 'dark' estiver no <html>, o body herde as novas cores */
+  html.dark body,
+  .dark body {
+    --background: oklch(0.16 0.02 272);
+    --foreground: oklch(0.94 0.02 252);
+  }
 }
