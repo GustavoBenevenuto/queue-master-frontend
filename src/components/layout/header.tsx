@@ -4,6 +4,7 @@ import { LogOut, Menu, User as UserIcon } from 'lucide-react'
 import { useState, useTransition } from 'react'
 
 import { SidebarNav } from './sidebar-nav'
+import { ThemeToggle } from './theme-toggle'
 
 import { signOutAction } from '@/app/auth/actions'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -65,35 +66,39 @@ export function Header({ userName }: HeaderProps) {
         </span>
       </div>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full"
-            aria-label="Menu do usuário"
-          >
-            <Avatar>
-              <AvatarFallback>
-                {initials || <UserIcon className="size-4" />}
-              </AvatarFallback>
-            </Avatar>
-          </Button>
-        </DropdownMenuTrigger>
+      <div className="flex items-center gap-1">
+        <ThemeToggle />
 
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>{userName}</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            disabled={isSigningOut}
-            onSelect={handleSignOut}
-          >
-            <LogOut className="size-4" />
-            Sair
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full"
+              aria-label="Menu do usuário"
+            >
+              <Avatar>
+                <AvatarFallback>
+                  {initials || <UserIcon className="size-4" />}
+                </AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>{userName}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              disabled={isSigningOut}
+              onSelect={handleSignOut}
+            >
+              <LogOut className="size-4" />
+              Sair
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </header>
   )
 }

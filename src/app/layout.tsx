@@ -2,8 +2,12 @@ import './globals.css'
 
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import { cn } from '@/lib/utils'
+import type { ReactNode } from 'react'
+
 import { QueryProvider } from './providers'
+import { ThemeProvider } from './theme-provider'
+
+import { cn } from '@/lib/utils'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
@@ -14,15 +18,23 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: ReactNode
 }>) {
   return (
     <html
       lang="en"
-      className={cn('dark', 'font-sans', 'font-sans', inter.variable)}
+      className={cn('font-sans', inter.variable)}
+      suppressHydrationWarning
     >
       <body>
-        <QueryProvider>{children}</QueryProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <QueryProvider>{children}</QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
