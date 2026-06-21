@@ -25,23 +25,20 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { ChangePasswordDialog } from '@/features/users/components/change-password-dialog'
-import { UserRole } from '@/features/users/types/user.types'
+import { useUserStore } from '@/stores/user-store'
 
-interface HeaderProps {
-  userId: string
-  userName: string
-  role: UserRole
-}
-
-export function Header({ userId, userName, role }: HeaderProps) {
+export function Header() {
+  const user = useUserStore(state => state.user)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [isSigningOut, startSignOut] = useTransition()
 
-  const initials = userName.slice(0, 2).toUpperCase()
+  const initials = user?.name.slice(0, 2).toUpperCase()
 
   function handleSignOut() {
     startSignOut(() => signOutAction())
   }
+
+  if (!user) return null
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-background px-4 sm:px-6 lg:px-8">
@@ -61,10 +58,7 @@ export function Header({ userId, userName, role }: HeaderProps) {
             <SheetHeader className="h-14 justify-center border-b border-border p-4">
               <SheetTitle>Queue master</SheetTitle>
             </SheetHeader>
-            <SidebarNav
-              role={role}
-              onNavigate={() => setMobileNavOpen(false)}
-            />
+            <SidebarNav onNavigate={() => setMobileNavOpen(false)} />
           </SheetContent>
         </Sheet>
 
@@ -93,11 +87,11 @@ export function Header({ userId, userName, role }: HeaderProps) {
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>{userName}</DropdownMenuLabel>
+            <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
             <DropdownMenuSeparator />
 
             <ChangePasswordDialog
-              userId={userId}
+              userId={user.id}
               requireCurrentPassword
               trigger={
                 <DropdownMenuItem onSelect={event => event.preventDefault()}>

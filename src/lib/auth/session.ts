@@ -2,6 +2,7 @@ import 'server-only'
 
 import { jwtDecode } from 'jwt-decode'
 import { cookies } from 'next/headers'
+import { cache } from 'react'
 
 import { AUTH_TOKEN_KEY } from '@/config/constants'
 import { UserRole } from '@/features/users/types/user.types'
@@ -38,7 +39,8 @@ export async function getSessionToken(): Promise<string | null> {
   return cookieStore.get(AUTH_TOKEN_KEY)?.value ?? null
 }
 
-export async function getSession() {
+/** Memoizado por requisição: chamar em vários Server Components não repete o decode do JWT. */
+export const getSession = cache(async () => {
   const token = await getSessionToken()
   if (!token) return null
 
@@ -59,4 +61,4 @@ export async function getSession() {
   } catch {
     return null
   }
-}
+})

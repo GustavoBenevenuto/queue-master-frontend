@@ -6,14 +6,8 @@ import { QUEUE_LISTS } from '../queue-list'
 import { QueueTable } from './queue-table'
 
 import { Button } from '@/components/ui/button'
-import { UserRole } from '@/features/users/types/user.types'
 
-interface QueueSwitcherProps {
-  role: UserRole
-  operatorNumber: string
-}
-
-export function QueueSwitcher({ role, operatorNumber }: QueueSwitcherProps) {
+export function QueueSwitcher() {
   const availableQueues = QUEUE_LISTS.filter(queue => queue.available)
   const [activeKey, setActiveKey] = useState(availableQueues[0]?.key)
 
@@ -41,12 +35,7 @@ export function QueueSwitcher({ role, operatorNumber }: QueueSwitcherProps) {
       </div>
 
       {activeQueue && (
-        <QueueTable
-          queue={activeQueue.key}
-          label={activeQueue.label}
-          role={role}
-          operatorNumber={operatorNumber}
-        />
+        <QueueTable queue={activeQueue.key} label={activeQueue.label} />
       )}
     </div>
   )

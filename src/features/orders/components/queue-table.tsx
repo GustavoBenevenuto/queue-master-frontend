@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { UserRole } from '@/features/users/types/user.types'
+import { useUserStore } from '@/stores/user-store'
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Pending',
@@ -42,17 +42,11 @@ const CONNECTION_COLORS = {
 interface QueueTableProps {
   queue: string
   label: string
-  role: UserRole
-  operatorNumber: string
 }
 
-export function QueueTable({
-  queue,
-  label,
-  role,
-  operatorNumber,
-}: QueueTableProps) {
-  const { orders, status } = useQueue({ queue, role, operatorNumber })
+export function QueueTable({ queue, label }: QueueTableProps) {
+  const user = useUserStore(state => state.user)
+  const { orders, status } = useQueue(queue)
 
   return (
     <div className="space-y-4">
@@ -60,8 +54,8 @@ export function QueueTable({
         <div>
           <h2 className="text-lg font-semibold tracking-tight">{label}</h2>
           <p className="text-sm text-muted-foreground">
-            {role === 'OPERATOR'
-              ? `Live orders for operator ${operatorNumber}`
+            {user?.role === 'OPERATOR'
+              ? `Live orders for operator ${user.operatorNumber}`
               : 'Live orders across the factory'}
           </p>
         </div>

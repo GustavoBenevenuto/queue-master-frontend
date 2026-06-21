@@ -5,16 +5,16 @@ import { usePathname } from 'next/navigation'
 
 import { NAV_ITEMS } from './nav-items'
 
-import { UserRole } from '@/features/users/types/user.types'
 import { cn } from '@/lib/utils'
+import { useUserStore } from '@/stores/user-store'
 
 interface SidebarNavProps {
-  role?: UserRole
   onNavigate?: () => void
 }
 
-export function SidebarNav({ role, onNavigate }: SidebarNavProps) {
+export function SidebarNav({ onNavigate }: SidebarNavProps) {
   const pathname = usePathname()
+  const role = useUserStore(state => state.user?.role)
 
   const items = NAV_ITEMS.filter(
     item => !item.roles || (role && item.roles.includes(role)),
