@@ -14,8 +14,11 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useSignIn } from '../hooks/use-sign-in'
 
 export function SignInForm() {
+  const signInFn = useSignIn()
+
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -26,18 +29,9 @@ export function SignInForm() {
 
   const router = useRouter()
 
-  const state = {
-    success: true,
-    message: null,
-    errors: {
-      email: null,
-      password: null,
-    },
+  function handleSignIn(data: SignInFormValues) {
+    signInFn.mutate({ email: data.email, password: data.password })
   }
-
-  const isPending = false
-
-  function handleSignIn(data: SignInFormValues) {}
 
   return (
     <FormProvider {...form}>
@@ -46,14 +40,14 @@ export function SignInForm() {
           Queue master
         </h3>
         <form onSubmit={form.handleSubmit(handleSignIn)} className="space-y-4">
-          {state.success === false && state.message && (
+          {signInFn.error && (
             <Alert variant="destructive">
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="size-4" />
                 <AlertTitle>Sign in failed!</AlertTitle>
               </div>
 
-              <AlertDescription> {state.message}</AlertDescription>
+              <AlertDescription> {signInFn.error.message}</AlertDescription>
             </Alert>
           )}
 
@@ -79,8 +73,12 @@ export function SignInForm() {
             </Link>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? (
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={signInFn.isPending}
+          >
+            {signInFn.isPending ? (
               <Loader2 className=" size-4 animate-spin" />
             ) : (
               'Sign in with e-mail'

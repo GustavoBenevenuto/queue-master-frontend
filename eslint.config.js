@@ -14,6 +14,11 @@ export default [
       parser: tsParser,
       ecmaVersion: 'latest',
       sourceType: 'module',
+      // 👇 Adicionado process e console para o ESLint reconhecer os globais do Node/Browser
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+      },
     },
     plugins: {
       import: importPlugin,
