@@ -1,14 +1,30 @@
 import { redirect } from 'next/navigation'
-import { isAuthenticated } from '@/app/auth/actions'
+import React from 'react'
+
+import { Header } from '@/components/layout/header'
+import { Sidebar } from '@/components/layout/sidebar'
+import { getSession } from '@/lib/auth/session'
 
 export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  if (!(await isAuthenticated())) {
+  const session = await getSession()
+
+  if (!session) {
     redirect('/auth/sign-in')
   }
 
-  return <>{children}</>
+  return (
+    <div className="min-h-screen bg-background">
+      <Sidebar />
+
+      <div className="flex min-h-screen flex-col md:pl-64">
+        <Header userName={session.name} />
+
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+      </div>
+    </div>
+  )
 }
