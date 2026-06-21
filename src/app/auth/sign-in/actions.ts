@@ -18,6 +18,7 @@ interface AccessTokenClaims {
   name: string
   sub: string
   role: UserRole
+  operatorNumber: string
 }
 
 type SignInResult =
@@ -43,6 +44,7 @@ export async function signInAction(
         name: claims.name,
         email: claims.sub,
         role: claims.role,
+        operatorNumber: claims.operatorNumber,
       },
     }
   } catch (error) {

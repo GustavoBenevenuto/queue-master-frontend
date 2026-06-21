@@ -11,6 +11,7 @@ interface AccessTokenClaims {
   name: string
   sub: string
   role: UserRole
+  operatorNumber: string
   exp: number
 }
 
@@ -53,6 +54,7 @@ export async function getSession() {
       name: claims.name,
       email: claims.sub,
       role: claims.role,
+      operatorNumber: claims.operatorNumber,
     }
   } catch {
     return null
