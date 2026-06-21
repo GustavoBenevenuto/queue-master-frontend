@@ -1,62 +1,38 @@
 'use client'
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
-import { SignInPayload, SignInResponse, User } from '../types/auth.types'
-import { signIn } from '../api/api.auth'
-import { jwtDecode } from 'jwt-decode'
-import { ApiError } from '@/lib/http/api-error'
-import { cookiesUtils } from '../actions/cookies-actions'
+
+import { SignInPayload } from '../types/auth.types'
+
+import { signInAction } from '@/app/auth/sign-in/actions'
+
+class SignInError extends Error {
+  constructor(
+    message: string,
+    public readonly statusCode?: number,
+  ) {
+    super(message)
+    this.name = 'SignInError'
+  }
+
+  get isUnauthorized(): boolean {
+    return this.statusCode === 401
+  }
+}
 
 export function useSignIn() {
   const router = useRouter()
 
-  return useMutation<SignInResponse, ApiError, SignInPayload>({
-    mutationFn: signIn,
-    onSuccess: data => {
-      // Grava o cookie diretamente no navegador (Síncrono, sem await)
-      cookiesUtils.saveToken(data.token)
+  return useMutation<void, SignInError, SignInPayload>({
+    mutationFn: async payload => {
+      const result = await signInAction(payload)
 
-      const user = getProfile(data.token)
-      console.log({ user })
-
-      // Redireciona
+      if (!result.success) {
+        throw new SignInError(result.message, result.statusCode)
+      }
+    },
+    onSuccess: () => {
       router.replace('/dashboard')
     },
-    onError: error => {
-      console.log({ error })
-
-      if (error.isUnauthorized) {
-        // toast.error('E-mail ou senha incorretos.')
-        return
-      }
-
-      // toast.error(
-      //   error.message || 'Não foi possível fazer login. Tente novamente.',
-      // )
-    },
   })
-}
-
-function getProfile(token: string): User | null {
-  if (!token) return null
-
-  try {
-    // Decodifica o token JWT (Isso é puramente matemático, não faz requisição HTTP)
-    const decoded = jwtDecode<{
-      id: string
-      name: string
-      sub: string // O subject que você definiu no Java (email)
-      role: string
-    }>(token)
-
-    return {
-      id: decoded.id,
-      name: decoded.name,
-      email: decoded.sub,
-      role: decoded.role,
-    }
-  } catch (error) {
-    console.error('Falha ao decodificar token:', error)
-    return null
-  }
 }

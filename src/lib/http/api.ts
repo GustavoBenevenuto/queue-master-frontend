@@ -1,23 +1,32 @@
+import 'server-only'
+
 import ky, { KyInstance, Options } from 'ky'
-import { cookiesUtils } from '@/features/auth/actions/cookies-actions'
+
 import { env } from '@/config/env'
+import { getSessionToken } from '@/lib/auth/session'
 
 const baseOptions: Options = {
-  baseUrl: env.NEXT_PUBLIC_API_URL,
+  prefix: env.NEXT_PUBLIC_API_URL,
   timeout: 15_000,
   retry: 0,
-  hooks: {
-    beforeRequest: [
-      ({ request }) => {
-        const token = cookiesUtils.getToken()
-
-        if (token) {
-          request.headers.set('Authorization', `Bearer ${token}`)
-        }
-      },
-    ],
-  },
 }
 
-/** Cliente HTTP padrão, usado em toda a aplicação. */
-export const httpClient: KyInstance = ky.create(baseOptions)
+/** Cliente HTTP server-side sem autenticação (ex.: login). */
+export const api: KyInstance = ky.create(baseOptions)
+
+/** Cliente HTTP server-side que anexa o Bearer token da sessão atual. */
+export async function createAuthenticatedHttpClient(): Promise<KyInstance> {
+  const token = await getSessionToken()
+
+  return api.extend({
+    hooks: {
+      beforeRequest: [
+        ({ request }) => {
+          if (token) {
+            request.headers.set('Authorization', `Bearer ${token}`)
+          }
+        },
+      ],
+    },
+  })
+}

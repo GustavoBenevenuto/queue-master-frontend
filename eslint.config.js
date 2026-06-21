@@ -18,6 +18,11 @@ export default [
       globals: {
         process: 'readonly',
         console: 'readonly',
+        URL: 'readonly',
+        Headers: 'readonly',
+        Request: 'readonly',
+        Response: 'readonly',
+        fetch: 'readonly',
       },
     },
     plugins: {
