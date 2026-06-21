@@ -1,6 +1,6 @@
 'use client'
 
-import { LogOut, Menu, User as UserIcon } from 'lucide-react'
+import { KeyRound, LogOut, Menu, User as UserIcon } from 'lucide-react'
 import { useState, useTransition } from 'react'
 
 import { SidebarNav } from './sidebar-nav'
@@ -24,12 +24,16 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
+import { ChangePasswordDialog } from '@/features/users/components/change-password-dialog'
+import { UserRole } from '@/features/users/types/user.types'
 
 interface HeaderProps {
+  userId: string
   userName: string
+  role: UserRole
 }
 
-export function Header({ userName }: HeaderProps) {
+export function Header({ userId, userName, role }: HeaderProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [isSigningOut, startSignOut] = useTransition()
 
@@ -48,7 +52,7 @@ export function Header({ userName }: HeaderProps) {
               variant="ghost"
               size="icon"
               className="md:hidden"
-              aria-label="Abrir menu"
+              aria-label="Open menu"
             >
               <Menu className="size-5" />
             </Button>
@@ -57,7 +61,10 @@ export function Header({ userName }: HeaderProps) {
             <SheetHeader className="h-14 justify-center border-b border-border p-4">
               <SheetTitle>Queue master</SheetTitle>
             </SheetHeader>
-            <SidebarNav onNavigate={() => setMobileNavOpen(false)} />
+            <SidebarNav
+              role={role}
+              onNavigate={() => setMobileNavOpen(false)}
+            />
           </SheetContent>
         </Sheet>
 
@@ -75,7 +82,7 @@ export function Header({ userName }: HeaderProps) {
               variant="ghost"
               size="icon"
               className="rounded-full"
-              aria-label="Menu do usuário"
+              aria-label="User menu"
             >
               <Avatar>
                 <AvatarFallback>
@@ -88,13 +95,25 @@ export function Header({ userName }: HeaderProps) {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>{userName}</DropdownMenuLabel>
             <DropdownMenuSeparator />
+
+            <ChangePasswordDialog
+              userId={userId}
+              requireCurrentPassword
+              trigger={
+                <DropdownMenuItem onSelect={event => event.preventDefault()}>
+                  <KeyRound className="size-4" />
+                  Change password
+                </DropdownMenuItem>
+              }
+            />
+
             <DropdownMenuItem
               variant="destructive"
               disabled={isSigningOut}
               onSelect={handleSignOut}
             >
               <LogOut className="size-4" />
-              Sair
+              Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

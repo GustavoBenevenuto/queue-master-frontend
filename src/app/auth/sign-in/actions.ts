@@ -8,6 +8,7 @@ import {
   SignInResponse,
   User,
 } from '@/features/auth/types/auth.types'
+import { UserRole } from '@/features/users/types/user.types'
 import { setSessionCookie } from '@/lib/auth/session'
 import { api } from '@/lib/http/api'
 import { ApiErrorResponse } from '@/lib/http/api-error'
@@ -16,7 +17,7 @@ interface AccessTokenClaims {
   id: string
   name: string
   sub: string
-  role: string
+  role: UserRole
 }
 
 type SignInResult =

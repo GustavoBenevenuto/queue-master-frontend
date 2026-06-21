@@ -4,12 +4,13 @@ import { jwtDecode } from 'jwt-decode'
 import { cookies } from 'next/headers'
 
 import { AUTH_TOKEN_KEY } from '@/config/constants'
+import { UserRole } from '@/features/users/types/user.types'
 
 interface AccessTokenClaims {
   id: string
   name: string
   sub: string
-  role: string
+  role: UserRole
   exp: number
 }
 

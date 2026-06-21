@@ -1,3 +1,5 @@
+import { UserRole } from '@/features/users/types/user.types'
+
 export interface SignInResponse {
   token: string
 }
@@ -11,5 +13,5 @@ export interface User {
   id: string
   name: string
   email: string
-  role: string
+  role: UserRole
 }
