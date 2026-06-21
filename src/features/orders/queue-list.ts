@@ -24,7 +24,7 @@ export const QUEUE_LISTS: QueueListItem[] = [
     description: 'Live wire-cutting orders',
     href: '/orders/wire-cutting',
     icon: Scissors,
-    available: false,
+    available: true,
   },
   {
     key: 'stock-withdrawal',
@@ -32,6 +32,6 @@ export const QUEUE_LISTS: QueueListItem[] = [
     description: 'Live stock withdrawal orders',
     href: '/orders/stock-withdrawal',
     icon: PackageMinus,
-    available: false,
+    available: true,
   },
 ]

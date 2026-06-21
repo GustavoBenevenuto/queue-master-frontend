@@ -3,6 +3,7 @@
 import { Circle } from 'lucide-react'
 
 import { useQueue } from '../hooks/use-queue'
+import { QUEUE_EXTRA_COLUMNS } from '../order-columns'
 
 import { Badge } from '@/components/ui/badge'
 import {
@@ -48,6 +49,9 @@ export function QueueTable({ queue, label }: QueueTableProps) {
   const user = useUserStore(state => state.user)
   const { orders, status } = useQueue(queue)
 
+  const extraColumns = QUEUE_EXTRA_COLUMNS[queue] ?? []
+  const columnCount = 6 + extraColumns.length
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -72,8 +76,13 @@ export function QueueTable({ queue, label }: QueueTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
+              <TableHead>Work order</TableHead>
               <TableHead>Operator</TableHead>
+              {extraColumns.map(column => (
+                <TableHead key={column.header}>{column.header}</TableHead>
+              ))}
+              <TableHead>Qty</TableHead>
+              <TableHead>Urgent</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Updated at</TableHead>
             </TableRow>
@@ -82,9 +91,29 @@ export function QueueTable({ queue, label }: QueueTableProps) {
           <TableBody>
             {orders.map(order => (
               <TableRow key={order.id}>
-                <TableCell className="font-medium">{order.id}</TableCell>
+                <TableCell className="font-medium">
+                  {order.workOrderNumber}
+                </TableCell>
                 <TableCell className="text-muted-foreground">
                   {order.operatorNumber}
+                </TableCell>
+                {extraColumns.map(column => (
+                  <TableCell
+                    key={column.header}
+                    className="text-muted-foreground"
+                  >
+                    {column.cell(order)}
+                  </TableCell>
+                ))}
+                <TableCell className="text-muted-foreground">
+                  {order.quantity}
+                </TableCell>
+                <TableCell>
+                  {order.isUrgent ? (
+                    <Badge variant="destructive">Urgent</Badge>
+                  ) : (
+                    <Badge variant="secondary">No urgent</Badge>
+                  )}
                 </TableCell>
                 <TableCell>
                   <Badge variant={STATUS_VARIANTS[order.status] ?? 'secondary'}>
@@ -100,7 +129,7 @@ export function QueueTable({ queue, label }: QueueTableProps) {
             {orders.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={4}
+                  colSpan={columnCount}
                   className="text-center py-8 text-sm text-muted-foreground"
                 >
                   No orders yet.
