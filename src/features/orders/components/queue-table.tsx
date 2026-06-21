@@ -1,11 +1,22 @@
 'use client'
 
-import { Circle } from 'lucide-react'
+import { Circle, X } from 'lucide-react'
 
+import { useOrderFilters } from '../hooks/use-order-filters'
 import { useQueue } from '../hooks/use-queue'
 import { QUEUE_EXTRA_COLUMNS } from '../order-columns'
 
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -49,6 +60,19 @@ export function QueueTable({ queue, label }: QueueTableProps) {
   const user = useUserStore(state => state.user)
   const { orders, status } = useQueue(queue)
 
+  const {
+    filteredOrders,
+    statusFilter,
+    setStatusFilter,
+    urgentFilter,
+    setUrgentFilter,
+    operatorFilter,
+    setOperatorFilter,
+    operatorFilterLocked,
+    hasActiveFilters,
+    clearFilters,
+  } = useOrderFilters(orders)
+
   const extraColumns = QUEUE_EXTRA_COLUMNS[queue] ?? []
   const columnCount = 6 + extraColumns.length
 
@@ -72,6 +96,65 @@ export function QueueTable({ queue, label }: QueueTableProps) {
         </div>
       </div>
 
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="space-y-1.5">
+          <Label>Status</Label>
+          <Select
+            value={statusFilter}
+            onValueChange={value =>
+              setStatusFilter(value as typeof statusFilter)
+            }
+          >
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="in_progress">In progress</SelectItem>
+              <SelectItem value="finished">Finished</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label>Urgency</Label>
+          <Select
+            value={urgentFilter}
+            onValueChange={value =>
+              setUrgentFilter(value as typeof urgentFilter)
+            }
+          >
+            <SelectTrigger className="w-36">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All orders</SelectItem>
+              <SelectItem value="urgent">Urgent only</SelectItem>
+              <SelectItem value="normal">Normal only</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label>Operator</Label>
+          <Input
+            value={operatorFilter}
+            onChange={event => setOperatorFilter(event.target.value)}
+            disabled={operatorFilterLocked}
+            placeholder="Operator number"
+            className="w-40"
+          />
+        </div>
+
+        {hasActiveFilters && (
+          <Button variant="ghost" size="sm" onClick={clearFilters}>
+            <X className="size-4" />
+            Clear filters
+          </Button>
+        )}
+      </div>
+
       <div className="rounded-md border border-border">
         <Table>
           <TableHeader>
@@ -89,7 +172,7 @@ export function QueueTable({ queue, label }: QueueTableProps) {
           </TableHeader>
 
           <TableBody>
-            {orders.map(order => (
+            {filteredOrders.map(order => (
               <TableRow key={order.id}>
                 <TableCell className="font-medium">
                   {order.workOrderNumber}
@@ -126,13 +209,15 @@ export function QueueTable({ queue, label }: QueueTableProps) {
               </TableRow>
             ))}
 
-            {orders.length === 0 && (
+            {filteredOrders.length === 0 && (
               <TableRow>
                 <TableCell
                   colSpan={columnCount}
                   className="text-center py-8 text-sm text-muted-foreground"
                 >
-                  No orders yet.
+                  {orders.length === 0
+                    ? 'No orders yet.'
+                    : 'No orders match the filters.'}
                 </TableCell>
               </TableRow>
             )}
