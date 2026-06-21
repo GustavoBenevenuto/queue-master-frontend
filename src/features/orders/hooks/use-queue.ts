@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
+import { listOrdersAction } from '../actions/order-actions'
 import { Order } from '../types/order.types'
 
 import { createAuthenticatedStompClient } from '@/lib/ws/stomp-client'
@@ -22,6 +23,14 @@ export function useQueue(queue: string) {
     setOrders([])
     setStatus('connecting')
 
+    listOrdersAction(queue).then(result => {
+      if (result.success) {
+        setOrders(result.data)
+      } else {
+        console.error('Failed to load initial orders:', result.message)
+      }
+    })
+
     const topic =
       user.role === 'OPERATOR'
         ? `/topic/${queue}/operator/${user.operatorNumber}`
@@ -33,8 +42,8 @@ export function useQueue(queue: string) {
         connectedClient.subscribe(topic, message => {
           try {
             setOrders(JSON.parse(message.body) as Order[])
-          } catch {
-            // ignore malformed payloads
+          } catch (error) {
+            console.error('Failed to parse queue message:', error, message.body)
           }
         })
       },
