@@ -17,7 +17,6 @@ export const api: KyInstance = ky.create(baseOptions)
 /** Cliente HTTP server-side que anexa o Bearer token da sessão atual. */
 export async function createAuthenticatedHttpClient(): Promise<KyInstance> {
   const token = await getSessionToken()
-
   return api.extend({
     hooks: {
       beforeRequest: [

@@ -49,17 +49,15 @@ export async function listOrdersAction(
 export async function createOrderAction(
   queue: string,
   payload: OrderFormValues,
-): Promise<ActionResult<Order[]>> {
+): Promise<ActionResult<undefined>> {
   try {
     const session = await getSession()
     if (!session) throw new Error('Forbidden')
 
     const client = await createAuthenticatedHttpClient()
-    const data = await client
-      .post(`orders/${queue}`, { json: [payload] })
-      .json<Order[]>()
+    await client.post(`orders/${queue}`, { json: [payload] })
 
-    return { success: true, data }
+    return { success: true, data: undefined }
   } catch (error) {
     return {
       success: false,
@@ -76,7 +74,9 @@ export async function updateOrderStatusAction(
   try {
     await requireAdminOrInventor()
     const client = await createAuthenticatedHttpClient()
-    await client.patch(`orders/${queue}/${id}/status`, { json: { status } })
+    await client.patch(`orders/${queue}/${id}/status`, {
+      searchParams: { status },
+    })
 
     return { success: true, data: undefined }
   } catch (error) {

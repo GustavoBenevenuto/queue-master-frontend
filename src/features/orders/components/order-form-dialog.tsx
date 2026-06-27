@@ -1,7 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ReactNode, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import { FormProvider, Resolver, useForm } from 'react-hook-form'
 
 import { createOrderAction } from '../actions/order-actions'
@@ -49,19 +49,30 @@ export function OrderFormDialog({
       : undefined,
     defaultValues: {
       workOrderNumber: '',
-      operatorNumber: isOperator ? String(user.operatorNumber ?? '') : '',
+      operatorNumber: '',
       quantity: 1,
       isUrgent: false,
       reason: '',
     },
   })
 
+  // `user` hidrata de forma assíncrona no store (depois do mount), então não
+  // dá pra confiar nele em `defaultValues` (lido só uma vez). Sincroniza aqui.
+  useEffect(() => {
+    if (isOperator && user) {
+      form.setValue('operatorNumber', String(user.operatorNumber ?? ''))
+    }
+  }, [isOperator, user, form])
+
   async function handleSubmit(values: OrderFormValues) {
     setFormError(null)
     setIsSubmitting(true)
-    values.operatorNumber = String(user?.operatorNumber ?? '')
-    const result = await createOrderAction(queue, values)
 
+    const payload = isOperator
+      ? { ...values, operatorNumber: String(user?.operatorNumber ?? '') }
+      : values
+
+    const result = await createOrderAction(queue, payload)
     setIsSubmitting(false)
 
     if (!result.success) {
@@ -115,7 +126,6 @@ export function OrderFormDialog({
               name="operatorNumber"
               label="Operator number"
               disabled={isOperator}
-              value={isOperator ? String(user.operatorNumber ?? '') : ''}
             />
 
             <InputForm<OrderFormValues>
