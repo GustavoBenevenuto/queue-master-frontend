@@ -1,13 +1,22 @@
 'use client'
 
-import { Circle, X } from 'lucide-react'
+import { Circle, MoreHorizontal, Pencil, Plus, Trash2, X } from 'lucide-react'
 
 import { useOrderFilters } from '../hooks/use-order-filters'
 import { useQueue } from '../hooks/use-queue'
 import { QUEUE_EXTRA_COLUMNS } from '../order-columns'
+import { DeleteOrderAlert } from './delete-order-alert'
+import { EditOrderStatusDialog } from './edit-order-status-dialog'
+import { OrderFormDialog } from './order-form-dialog'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -58,6 +67,7 @@ interface QueueTableProps {
 
 export function QueueTable({ queue, label }: QueueTableProps) {
   const user = useUserStore(state => state.user)
+  const canManage = user?.role === 'ADMIN' || user?.role === 'INVENTOR'
   const { orders, status } = useQueue(queue)
 
   const {
@@ -74,7 +84,7 @@ export function QueueTable({ queue, label }: QueueTableProps) {
   } = useOrderFilters(orders)
 
   const extraColumns = QUEUE_EXTRA_COLUMNS[queue] ?? []
-  const columnCount = 6 + extraColumns.length
+  const columnCount = 6 + extraColumns.length + (canManage ? 1 : 0)
 
   return (
     <div className="space-y-4">
@@ -88,11 +98,23 @@ export function QueueTable({ queue, label }: QueueTableProps) {
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <Circle
-            className={`size-2.5 fill-current ${CONNECTION_COLORS[status]}`}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <Circle
+              className={`size-2.5 fill-current ${CONNECTION_COLORS[status]}`}
+            />
+            {CONNECTION_LABELS[status]}
+          </div>
+
+          <OrderFormDialog
+            queue={queue}
+            trigger={
+              <Button size="sm">
+                <Plus className="size-4" />
+                New order
+              </Button>
+            }
           />
-          {CONNECTION_LABELS[status]}
         </div>
       </div>
 
@@ -168,6 +190,7 @@ export function QueueTable({ queue, label }: QueueTableProps) {
               <TableHead>Urgent</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Updated at</TableHead>
+              {canManage && <TableHead className="w-12" />}
             </TableRow>
           </TableHeader>
 
@@ -206,6 +229,47 @@ export function QueueTable({ queue, label }: QueueTableProps) {
                 <TableCell className="text-muted-foreground">
                   {order.updatedAt}
                 </TableCell>
+                {canManage && (
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon-sm">
+                          <MoreHorizontal className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuContent align="end">
+                        <EditOrderStatusDialog
+                          queue={queue}
+                          order={order}
+                          trigger={
+                            <DropdownMenuItem
+                              onSelect={event => event.preventDefault()}
+                            >
+                              <Pencil className="size-4" />
+                              Edit status
+                            </DropdownMenuItem>
+                          }
+                        />
+
+                        <DeleteOrderAlert
+                          queue={queue}
+                          orderId={order.id}
+                          workOrderNumber={order.workOrderNumber}
+                          trigger={
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onSelect={event => event.preventDefault()}
+                            >
+                              <Trash2 className="size-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          }
+                        />
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
 

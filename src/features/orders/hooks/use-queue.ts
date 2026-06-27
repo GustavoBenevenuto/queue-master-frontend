@@ -10,6 +10,24 @@ import { useUserStore } from '@/stores/user-store'
 
 export type { ConnectionStatus } from '@/lib/ws/stomp-client'
 
+type QueueEvent =
+  | { type: 'ORDER_CREATED'; data: Order }
+  | { type: 'STATUS_CHANGED'; data: Order }
+  | { type: 'ORDER_DELETED'; data: Order }
+
+function applyEvent(orders: Order[], event: QueueEvent): Order[] {
+  if (event.type === 'ORDER_DELETED') {
+    return orders.filter(order => order.id !== event.data.id)
+  }
+
+  const index = orders.findIndex(order => order.id === event.data.id)
+  if (index === -1) return [...orders, event.data]
+
+  const next = [...orders]
+  next[index] = event.data
+  return next
+}
+
 export function useQueue(queue: string) {
   const user = useUserStore(state => state.user)
   const [orders, setOrders] = useState<Order[]>([])
@@ -41,7 +59,8 @@ export function useQueue(queue: string) {
       onConnect: connectedClient => {
         connectedClient.subscribe(topic, message => {
           try {
-            setOrders(JSON.parse(message.body) as Order[])
+            const event = JSON.parse(message.body) as QueueEvent
+            setOrders(previous => applyEvent(previous, event))
           } catch (error) {
             console.error('Failed to parse queue message:', error, message.body)
           }
